@@ -2,10 +2,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
-from src.db.connection import get_connection
+from src.db.connection import get_connection, init_db
 from src.model.inference import load_model, get_reconstruction_error
 
-# Global model variables
 model = None
 min_val = None
 max_val = None
@@ -14,6 +13,7 @@ THRESHOLD = 0.213
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, min_val, max_val
+    init_db()
     print("Loading model...")
     model, min_val, max_val = load_model()
     print("Model loaded.")
