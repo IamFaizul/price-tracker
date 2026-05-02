@@ -18,9 +18,19 @@ def get_or_create_product(name: str, site: str) -> int:
     conn.close()
     return row["id"]
 
-def insert_price(product_id: int, price: float):
+def insert_price(product_id: int, price: float) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
+    
+    cursor.execute(
+        "SELECT price FROM price_history WHERE product_id = ? ORDER BY scraped_at DESC LIMIT 1",
+        (product_id,)
+    )
+    last = cursor.fetchone()
+    
+    if last and last["price"] == price:
+        conn.close()
+        return False
     
     cursor.execute(
         "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
@@ -28,12 +38,15 @@ def insert_price(product_id: int, price: float):
     )
     conn.commit()
     conn.close()
+    return True
 
 def save_scrape_results(results: list[dict]):
+    inserted = 0
     for item in results:
         product_id = get_or_create_product(item["name"], item["site"])
-        insert_price(product_id, item["price"])
-    print(f"Saved {len(results)} price records.")
+        if insert_price(product_id, item["price"]):
+            inserted += 1
+    print(f"Saved {inserted} new price records. ({len(results)} total scraped)")
 
 def get_price_history(product_id: int) -> list:
     conn = get_connection()
