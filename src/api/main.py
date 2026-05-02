@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from src.db.connection import get_connection, init_db
+from src.db.models import get_recent_anomalies
 from src.model.inference import load_model, get_reconstruction_error
 
 model = None
@@ -76,3 +77,7 @@ def detect_anomaly(request: AnomalyRequest):
         "is_anomaly": error > THRESHOLD,
         "threshold": THRESHOLD
     }
+
+@app.get("/anomalies/recent")
+def recent_anomalies():
+    return get_recent_anomalies(limit=10)
