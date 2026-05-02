@@ -32,6 +32,10 @@ class AnomalyRequest(BaseModel):
     product_id: int
     prices: list[float]
 
+@app.get("/")
+def root():
+    return {"message": "Price Tracker API", "docs": "/docs", "health": "/health"}
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
