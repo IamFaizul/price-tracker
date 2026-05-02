@@ -5,11 +5,21 @@ import os
 from src.model.autoencoder import PriceAutoencoder, prepare_sequences, normalize
 from src.db.connection import get_connection
 
-def load_all_prices() -> list:
-    
+def load_all_prices(site: str = None) -> list:
+    """Load price history from DB, optionally filtered by site"""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT product_id FROM price_history")
+    
+    if site:
+        cursor.execute("""
+            SELECT DISTINCT ph.product_id 
+            FROM price_history ph
+            JOIN products p ON ph.product_id = p.id
+            WHERE p.site = ?
+        """, (site,))
+    else:
+        cursor.execute("SELECT DISTINCT product_id FROM price_history")
+    
     product_ids = [row["product_id"] for row in cursor.fetchall()]
     
     all_sequences = []
@@ -26,9 +36,9 @@ def load_all_prices() -> list:
     conn.close()
     return all_sequences
 
-def train():
+def train(site: str = None):
     print("Loading data...")
-    sequences = load_all_prices()
+    sequences = load_all_prices(site=site)
     
     if len(sequences) == 0:
         print("Not enough data. Need at least 7 price points per product.")
@@ -37,17 +47,14 @@ def train():
     data = np.array(sequences)
     data, min_val, max_val = normalize(data)
     
-    
     tensor_data = torch.FloatTensor(data)
     
-    # Model, loss, optimizer
     model = PriceAutoencoder(input_size=7)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
     print(f"Training on {len(sequences)} sequences...")
     
-    # Training loop
     epochs = 200
     for epoch in range(epochs):
         model.train()
@@ -60,7 +67,6 @@ def train():
         if (epoch + 1) % 20 == 0:
             print(f"Epoch {epoch+1}/{epochs} | Loss: {loss.item():.6f}")
     
-    
     os.makedirs("data", exist_ok=True)
     torch.save({
         "model_state": model.state_dict(),
@@ -71,4 +77,4 @@ def train():
     print("Model saved to data/autoencoder.pth")
 
 if __name__ == "__main__":
-    train()
+    train(site="startech")
