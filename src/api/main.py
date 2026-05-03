@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
+from typing import Optional
 from src.db.connection import get_connection, init_db
 from src.db.models import get_recent_anomalies
 from src.model.inference import load_model, get_reconstruction_error
@@ -51,16 +52,24 @@ def get_products():
     return [dict(row) for row in rows]
 
 @app.get("/price-history/{product_id}")
-def get_price_history(product_id: int):
+def get_price_history(product_id: int, from_date: Optional[str] = None, to_date: Optional[str] = None):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM products WHERE id = ?", (product_id,))
     if not cursor.fetchone():
         raise HTTPException(status_code=404, detail="Product not found")
-    cursor.execute(
-        "SELECT price, scraped_at FROM price_history WHERE product_id = ? ORDER BY scraped_at ASC",
-        (product_id,)
-    )
+    
+    if from_date and to_date:
+        cursor.execute(
+            "SELECT price, scraped_at FROM price_history WHERE product_id = ? AND scraped_at BETWEEN ? AND ? ORDER BY scraped_at ASC",
+            (product_id, from_date, to_date)
+        )
+    else:
+        cursor.execute(
+            "SELECT price, scraped_at FROM price_history WHERE product_id = ? ORDER BY scraped_at ASC",
+            (product_id,)
+        )
+    
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
