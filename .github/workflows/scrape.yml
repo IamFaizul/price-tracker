@@ -1,0 +1,33 @@
+name: Daily Price Scraper
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # Every day at midnight Bangladesh time (UTC+6)
+  workflow_dispatch:  # Manual trigger option
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python -m scripts.run_scraper
+
+      - name: Commit updated database
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/prices.db
+          git diff --staged --quiet || git commit -m "auto: update price data $(date +'%Y-%m-%d')"
+          git push
