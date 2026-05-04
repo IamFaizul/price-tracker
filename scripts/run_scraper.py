@@ -53,13 +53,13 @@ def check_anomalies(model, min_val, max_val):
             anomaly_count += 1
             print(f"[anomaly] product_id={pid} error={error:.4f} severity={severity}")
 
+            severity_emoji = "🔴 High" if severity == "high" else "🟡 Medium" if severity == "medium" else "🟢 Low"
+
             message = (
-                f"🚨 <b>Price Anomaly Detected</b>\n\n"
-                f"Product: {name}\n"
-                f"Severity: {severity.upper()}\n"
-                f"Reconstruction Error: {error:.4f}\n"
-                f"Threshold: {THRESHOLD}\n\n"
-                f"Check dashboard: https://cost-insight-station.lovable.app"
+                f"🚨 <b>Price Alert — {name}</b>\n\n"
+                f"An unusual price movement has been detected.\n\n"
+                f"Severity: {severity_emoji}\n\n"
+                f"👉 <a href='https://cost-insight-station.lovable.app/price-history/{pid}'>View Price History</a>"
             )
             send_telegram_alert(message)
 
