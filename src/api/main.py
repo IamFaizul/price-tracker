@@ -90,3 +90,17 @@ def detect_anomaly(request: AnomalyRequest):
 @app.get("/anomalies/recent")
 def recent_anomalies():
     return get_recent_anomalies(limit=10)
+
+@app.get("/price-changes/{product_id}")
+def price_change_count(product_id: int, days: int = 7):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) as change_count
+        FROM price_history
+        WHERE product_id = ?
+        AND scraped_at >= datetime('now', ? || ' days')
+    """, (product_id, f'-{days}'))
+    result = cursor.fetchone()
+    conn.close()
+    return {"product_id": product_id, "days": days, "change_count": result["change_count"]}
