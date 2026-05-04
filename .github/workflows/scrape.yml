@@ -2,8 +2,8 @@ name: Daily Price Scraper
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # Every day at midnight Bangladesh time (UTC+6)
-  workflow_dispatch:  # Manual trigger option
+    - cron: '0 18 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -22,6 +22,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run scraper
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python -m scripts.run_scraper
 
       - name: Commit updated database
