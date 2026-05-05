@@ -1,7 +1,8 @@
 import os
 import requests as req
 from src.scraper.sites.startech import StartechScraper
-from src.scraper.sites.ryans import RyansScraper
+from src.scraper.sites.applegadgets import AppleGadgetsScraper
+from src.scraper.sites.dazzle import DazzleScraper
 from src.db.models import save_scrape_results, get_price_history, insert_anomaly
 from src.model.inference import load_model, get_reconstruction_error
 import time
@@ -71,7 +72,8 @@ def run_all():
 
     scrapers = [
         StartechScraper(),
-        RyansScraper(),
+        AppleGadgetsScraper(),
+        DazzleScraper(),
     ]
 
     for scraper in scrapers:
