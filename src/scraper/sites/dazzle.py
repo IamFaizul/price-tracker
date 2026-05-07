@@ -7,12 +7,12 @@ class DazzleScraper(BaseScraper):
     def __init__(self):
         super().__init__(site_name="dazzle")
         self.urls = [
-    "https://dazzle.com.bd/categories/laptop/apple-macbook",
-    "https://dazzle.com.bd/categories/phones/iphone",
-    "https://dazzle.com.bd/categories/tablet/ipad",
-    "https://dazzle.com.bd/categories/smart-watch/apple-watch",
-    "https://dazzle.com.bd/categories/gadget/airpods",
-]
+            "https://dazzle.com.bd/categories/laptop/apple-macbook",
+            "https://dazzle.com.bd/categories/phones/iphone",
+            "https://dazzle.com.bd/categories/tablet/ipad",
+            "https://dazzle.com.bd/categories/smart-watch/apple-watch",
+            "https://dazzle.com.bd/categories/gadget/airpods",
+        ]
 
     def scrape(self) -> list[dict]:
         os.environ['PLAYWRIGHT_BROWSERS_PATH'] = 'D:\\playwright-browsers'
@@ -42,7 +42,10 @@ class DazzleScraper(BaseScraper):
                             price_el = product.find_next("span", class_="font-semibold")
                             price_text = price_el.get_text(strip=True)
                             price = float(price_text.replace("৳", "").replace(",", "").strip())
-                            results.append(self.format_result(name, price))
+                            card = product.find_parent(class_="rounded")
+                            img_tag = card.find("img") if card else None
+                            image_url = "https://dazzle.com.bd" + img_tag["src"] if img_tag and img_tag["src"].startswith("/") else img_tag["src"] if img_tag else None
+                            results.append(self.format_result(name, price, image_url))
                         except Exception:
                             continue
 

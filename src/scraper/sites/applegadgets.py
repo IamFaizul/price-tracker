@@ -39,7 +39,9 @@ class AppleGadgetsScraper(BaseScraper):
                             name = product.find(class_="line-clamp-2").get_text(strip=True)
                             price_text = product.find("span", class_="font-semibold").get_text(strip=True)
                             price = float(price_text.replace("৳", "").replace(",", "").strip())
-                            results.append(self.format_result(name, price))
+                            img_tag = product.find("img")
+                            image_url = "https://www.applegadgetsbd.com" + img_tag["src"] if img_tag and img_tag["src"].startswith("/") else img_tag["src"] if img_tag else None
+                            results.append(self.format_result(name, price, image_url))
                         except Exception:
                             continue
 
