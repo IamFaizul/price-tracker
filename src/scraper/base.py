@@ -13,11 +13,12 @@ class BaseScraper(ABC):
     def scrape(self) -> list[dict]:
         pass
     
-    def format_result(self, name: str, price: float) -> dict:
+    def format_result(self, name: str, price: float, image_url: str = None) -> dict:
         return {
             "site": self.site_name,
             "name": name,
             "price": price,
             "currency": "BDT",
+            "image_url": image_url,
             "scraped_at": datetime.now().isoformat()
         }

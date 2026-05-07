@@ -46,7 +46,7 @@ def health():
 def get_products():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, site FROM products ORDER BY site, name")
+    cursor.execute("SELECT id, name, site, image_url FROM products ORDER BY site, name")
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]

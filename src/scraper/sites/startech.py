@@ -32,7 +32,9 @@ class StartechScraper(BaseScraper):
                         name = product.find(class_="p-item-name").get_text(strip=True)
                         price_text = product.find(class_="p-item-price").find("span").get_text(strip=True)
                         price = float(price_text.replace(",", "").replace("৳", "").strip())
-                        results.append(self.format_result(name, price))
+                        img_tag = product.find("img")
+                        image_url = img_tag["src"] if img_tag else None
+                        results.append(self.format_result(name, price, image_url))
                     except Exception:
                         continue
                         
